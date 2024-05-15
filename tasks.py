@@ -76,17 +76,32 @@ def create_tables(connection):
 def fetch_and_store_show_data(connection, show_name):
     api_url = f'http://api.tvmaze.com/singlesearch/shows?q={show_name}&embed=episodes'
     response = requests.get(api_url)
+    if response.status_code != 200:
+        print(f"Failed to fetch data for {show_name}")
+        return
     show_data = response.json()
 
     cursor = connection.cursor()
-    genres = ', '.join(show_data['genres'])  # Korrekte Verarbeitung der Genres als Liste von Strings
-    cursor.execute("INSERT INTO shows (name, genres, premiered) VALUES (%s, %s, %s)",
-                   (show_data['name'], genres, show_data['premiered']))
-    show_id = cursor.lastrowid
+    # Check if the show already exists
+    cursor.execute("SELECT id FROM shows WHERE name = %s", (show_data['name'],))
+    existing_show = cursor.fetchone()
+    if existing_show:
+        show_id = existing_show[0]
+        print(f"Show already exists: {show_data['name']}")
+    else:
+        genres = ', '.join(show_data['genres'])
+        cursor.execute("INSERT INTO shows (name, genres, premiered) VALUES (%s, %s, %s)",
+                       (show_data['name'], genres, show_data['premiered']))
+        show_id = cursor.lastrowid
+        print(f"Inserted new show: {show_data['name']}")
 
+    # Insert episodes if they don't exist
     for episode in show_data['_embedded']['episodes']:
-        cursor.execute("INSERT INTO episodes (show_id, name, duration, airdate) VALUES (%s, %s, %s, %s)",
-                       (show_id, episode['name'], episode['runtime'], episode['airdate']))
+        cursor.execute("SELECT id FROM episodes WHERE name = %s AND show_id = %s", (episode['name'], show_id))
+        if not cursor.fetchone():
+            cursor.execute("INSERT INTO episodes (show_id, name, duration, airdate) VALUES (%s, %s, %s, %s)",
+                           (show_id, episode['name'], episode['runtime'], episode['airdate']))
+            print(f"Inserted new episode: {episode['name']}")
 
     connection.commit()
 
