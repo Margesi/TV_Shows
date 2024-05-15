@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TV Show Ratings</title>
+</head>
+<body>
+    <h1>TV Shows</h1>
+    <ul>
+        {% for show in shows %}
+        <li>
+            <a href="{{ url_for('show_details', show_id=show['id']) }}">{{ show['name'] }}</a> -
+            <form action="{{ url_for('rate_show') }}" method="post">
+                <input type="hidden" name="show_id" value="{{ show['id'] }}">
+                <input type="number" name="rating" min="1" max="10" value="{{ show.get('rating', 5) }}">
+                <button type="submit">Rate</button>
+            </form>
+        </li>
+        {% endfor %}
+    </ul>
+      <!-- Button to navigate to show details interface -->
+     <a href="{{ url_for('show_details') }}">View Show Details</a>
+
+</body>
+</html>

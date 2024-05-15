@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Show Details</title>
+</head>
+<body>
+    <a href="{{ url_for('index') }}">Rate the shows</a>
+    <h1>Show Details</h1>
+    {% for show in shows %}
+        <h2>{{ show.name }}</h2>
+        <p><strong>Genres:</strong> {{ show.genres }}</p>
+        <p><strong>Premiered:</strong> {{ show.premiered }}</p>
+        <p><strong>Average Episode Duration:</strong> {{ show.average_duration }} minutes</p>
+
+        <h3>Episodes:</h3>
+        <ul>
+            {% for episode in show.episodes %}
+                <li>{{ episode.name }} - {{ episode.duration }} minutes (Aired on {{ episode.airdate }})</li>
+            {% else %}
+                <li>No episodes available.</li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>No shows available.</p>
+    {% endfor %}
+</body>
+</html>
