@@ -1,5 +1,5 @@
 from flask import Flask, render_template, request, redirect, url_for
-import mysql.connector
+import statistics
 from tasks import connect_to_db
 app = Flask(__name__)
 
@@ -54,9 +54,12 @@ def show_details():
         if episodes:
             average_duration = sum(ep['duration'] for ep in episodes if ep['duration']) / len(
                 [ep for ep in episodes if ep['duration']])
+            median_duration = statistics.median(ep['duration'] for ep in episodes if ep['duration'])
             show['average_duration'] = average_duration
+            show['median_duration'] = median_duration
         else:
             show['average_duration'] = None
+            show['median_duration'] = None
 
     cursor.close()
     conn.close()
